@@ -1,0 +1,252 @@
+
+@page "/events/{EventId:int}"
+@using EventBookingSystem.Models
+@using EventBookingSystem.Data
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components
+
+@*
+    Component to view event details and allow registration/reservation.
+    NOTE: The @inject and @rendermode directives were moved to the @code block
+    to avoid parsing errors in this environment.
+*@
+
+<PageTitle>Event Details</PageTitle>
+
+<div class="max-w-4xl mx-auto p-6 bg-white shadow-2xl rounded-xl mt-10">
+    @if (isLoading)
+    {
+        <div class="text-center py-10 text-gray-500">
+            <p class="animate-spin inline-block oi oi-reload text-2xl"></p>
+            <p class="mt-2">Loading event details...</p>
+        </div>
+    }
+    else if (Event == null)
+    {
+        <div class="text-center py-10 border border-dashed border-gray-300 rounded-lg">
+            <h1 class="text-3xl font-bold text-red-600">Event Not Found</h1>
+            <p class="text-gray-500 mt-2">The event you are looking for does not exist or has been removed.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Event Details -->
+        <h1 class="text-4xl font-extrabold text-indigo-700 mb-2">@Event.Name</h1>
+        <p class="text-xl text-gray-600 mb-6">
+            <span class="oi oi-calendar mr-2" aria-hidden="true"></span>
+            @Event.StartDate.ToString("dd MMMM yyyy HH:mm") - @Event.EndDate.ToString("HH:mm")
+        </p>
+        <p class="text-lg text-gray-700 mb-4 whitespace-pre-line">@Event.Description</p>
+        <div class="flex items-center text-gray-600 mb-6">
+            <span class="oi oi-map-marker mr-2" aria-hidden="true"></span>
+            <span class="font-semibold">Location:</span> @Event.Location
+            <span class="ml-4 oi oi-people mr-2" aria-hidden="true"></span>
+            <span class="font-semibold">Maximum Capacity:</span> @Event.MaxCapacity
+        </div>
+
+        <!-- Ticket and Registration Section -->
+        <h2 class="text-2xl font-bold text-gray-800 mt-8 mb-4 border-t pt-4">Make Your Reservation</h2>
+
+        <EditForm Model="@registrationModel" OnValidSubmit="HandleRegistrationSubmit" FormName="RegistrationForm">
+            <DataAnnotationsValidator />
+            
+            <!-- Buyer Info Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label for="fullName" class="block text-sm font-medium text-gray-700">Your Full Name</label>
+                    <InputText id="fullName" @bind-Value="registrationModel.FullName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                    <ValidationMessage For="@(() => registrationModel.FullName)" class="text-sm text-red-600 mt-1" />
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Your Best Email</label>
+                    <InputText id="email" @bind-Value="registrationModel.Email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                    <ValidationMessage For="@(() => registrationModel.Email)" class="text-sm text-red-600 mt-1" />
+                </div>
+            </div>
+
+            <!-- Ticket Type Selection -->
+            <div class="space-y-4 mb-6">
+                @foreach (var ticketType in Event.TicketTypes)
+                {
+                    var totalSold = ticketType.Registrations.Sum(r => r.Quantity);
+                    var remainingQuota = ticketType.Quota - totalSold;
+
+                    <div class="p-4 border rounded-lg @(remainingQuota > 0 ? "bg-gray-50" : "bg-red-50 opacity-70") relative">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-lg">@ticketType.Name</h3>
+                                <p class="text-indigo-600 font-semibold">@ticketType.Price.ToString("C")</p>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                @if (remainingQuota > 0)
+                                {
+                                    <label for="qty-@ticketType.Id" class="text-sm font-medium text-gray-700">Quantity:</label>
+                                    <InputNumber id="@($"qty-{ticketType.Id}")" @bind-Value="Quantities[ticketType.Id]" min="0" max="@(remainingQuota > 5 ? 5 : remainingQuota)" class="w-16 rounded-md border-gray-300 shadow-sm p-2 border text-center" />
+                                }
+                                else
+                                {
+                                    <span class="text-red-500 font-bold">SOLD OUT</span>
+                                }
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            @if (remainingQuota > 0)
+                            {
+                                <span>Available Quota: @remainingQuota of @ticketType.Quota</span>
+                            }
+                            else
+                            {
+                                <span>Total Quota: @ticketType.Quota</span>
+                            }
+                        </p>
+                    </div>
+                }
+            </div>
+
+            <!-- Purchase Total -->
+            <div class="flex justify-between items-center p-4 bg-indigo-50 border-t border-b border-indigo-200 font-bold text-xl text-indigo-800">
+                <span>Estimated Total:</span>
+                <span>@TotalAmount.ToString("C")</span>
+            </div>
+
+            <!-- Status Message -->
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <div class="mt-6 p-4 @(isSuccess ? "bg-green-100 border-green-400 text-green-700" : "bg-red-100 border-red-400 text-red-700") border rounded-lg" role="alert">
+                    @statusMessage
+                </div>
+            }
+            
+            <!-- Action Button -->
+            <div class="mt-6 flex justify-end">
+                <button type="submit" disabled="@(isProcessing || TotalAmount == 0)" 
+                        class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-xl hover:bg-indigo-700 transition duration-200 disabled:opacity-50">
+                    @if (isProcessing)
+                    {
+                        <span class="animate-pulse">Processing...</span>
+                    }
+                    else
+                    {
+                        <span>Confirm Reservation (@TotalAmount.ToString("C"))</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    [Inject]
+    public EventService EventService { get; set; } = default!;
+
+    [Inject]
+    public NavigationManager NavManager { get; set; } = default!;
+
+    private Event? Event;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private string statusMessage = string.Empty;
+    private bool isSuccess = false;
+
+    // Model for buyer data
+    private Registration registrationModel = new Registration();
+
+    // Dictionary to store selected quantity for each TicketType.
+    // Key: TicketTypeId, Value: Quantity
+    private Dictionary<int, int> Quantities = new Dictionary<int, int>();
+
+    // Computed property for total purchase amount
+    private decimal TotalAmount
+    {
+        get
+        {
+            if (Event == null) return 0;
+            decimal total = 0;
+            foreach (var ticketType in Event.TicketTypes)
+            {
+                if (Quantities.TryGetValue(ticketType.Id, out int qty))
+                {
+                    total += ticketType.Price * qty;
+                }
+            }
+            return total;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        Event = await EventService.GetEventByIdAsync(EventId);
+        
+        if (Event != null)
+        {
+            // Initialize quantity dictionary with 0 for each ticket type
+            Quantities = Event.TicketTypes.ToDictionary(t => t.Id, t => 0);
+        }
+        isLoading = false;
+    }
+
+    private async Task HandleRegistrationSubmit()
+    {
+        if (TotalAmount == 0)
+        {
+            statusMessage = "Please select at least one ticket.";
+            isSuccess = false;
+            return;
+        }
+
+        isProcessing = true;
+        statusMessage = string.Empty;
+        isSuccess = false;
+
+        var registrationsToCreate = new List<Registration>();
+
+        foreach (var kvp in Quantities.Where(q => q.Value > 0))
+        {
+            var ticketTypeId = kvp.Key;
+            var quantity = kvp.Value;
+            var ticketType = Event!.TicketTypes.First(t => t.Id == ticketTypeId);
+            var totalSold = ticketType.Registrations.Sum(r => r.Quantity);
+            var remainingQuota = ticketType.Quota - totalSold;
+
+            if (quantity > remainingQuota)
+            {
+                statusMessage = $"Error: Quantity {quantity} exceeds available quota ({remainingQuota}) for '{ticketType.Name}'.";
+                isProcessing = false;
+                return;
+            }
+
+            // Create a new registration object for each selected ticket type
+            registrationsToCreate.Add(new Registration
+            {
+                TicketTypeId = ticketTypeId,
+                FullName = registrationModel.FullName,
+                Email = registrationModel.Email,
+                Quantity = quantity,
+                RegistrationDate = DateTime.Now
+            });
+        }
+        
+        try
+        {
+            await EventService.AddRegistrationsAsync(registrationsToCreate);
+            isSuccess = true;
+            statusMessage = $"Reservation of {registrationsToCreate.Sum(r => r.Quantity)} tickets for '{Event!.Name}' completed successfully! Total: {TotalAmount.ToString("C")}";
+            
+            registrationModel = new Registration();
+            await OnParametersSetAsync(); // Reload event to update quotas
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            statusMessage = $"Error processing reservation: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}

@@ -1,0 +1,222 @@
+@page "/events/create"
+@using EventBookingSystem.Models
+@using EventBookingSystem.Data
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components // Required for [Inject]
+@using System.Linq // ADICIONADO: Necessário para usar ElementAt()
+@rendermode InteractiveServer
+
+<PageTitle>Create New Event</PageTitle>
+
+<div class="max-w-4xl mx-auto p-6 bg-white shadow-2xl rounded-xl mt-10">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">Create New Event</h1>
+
+    <EditForm Model="@newEvent" OnValidSubmit="HandleCreateEvent" FormName="EventForm">
+        <DataAnnotationsValidator />
+        
+        <!-- EVENT DATA SECTION -->
+        <h2 class="text-xl font-semibold text-indigo-600 mb-4 mt-6">1. Main Event Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Event Name -->
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Event Name</label>
+                <InputText id="name" @bind-Value="newEvent.Name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <ValidationMessage For="@(() => newEvent.Name)" class="text-sm text-red-600 mt-1" />
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+                <InputText id="location" @bind-Value="newEvent.Location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <ValidationMessage For="@(() => newEvent.Location)" class="text-sm text-red-600 mt-1" />
+            </div>
+
+            <!-- Start Date -->
+            <div>
+                <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date and Time</label>
+                <InputDate id="startDate" @bind-Value="newEvent.StartDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <ValidationMessage For="@(() => newEvent.StartDate)" class="text-sm text-red-600 mt-1" />
+            </div>
+
+            <!-- End Date -->
+            <div>
+                <label for="endDate" class="block text-sm font-medium text-gray-700">End Date and Time</label>
+                <InputDate id="endDate" @bind-Value="newEvent.EndDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <ValidationMessage For="@(() => newEvent.EndDate)" class="text-sm text-red-600 mt-1" />
+            </div>
+
+            <!-- Max Capacity -->
+            <div class="md:col-span-2">
+                <label for="maxCapacity" class="block text-sm font-medium text-gray-700">Maximum Capacity</label>
+                <InputNumber id="maxCapacity" @bind-Value="newEvent.MaxCapacity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <ValidationMessage For="@(() => newEvent.MaxCapacity)" class="text-sm text-red-600 mt-1" />
+            </div>
+
+            <!-- Description -->
+            <div class="md:col-span-2">
+                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                <InputTextArea id="description" @bind-Value="newEvent.Description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <ValidationMessage For="@(() => newEvent.Description)" class="text-sm text-red-600 mt-1" />
+            </div>
+        </div>
+
+        <!-- TICKET TYPES SECTION -->
+        <h2 class="text-xl font-semibold text-indigo-600 mb-4 mt-8 pt-4 border-t">2. Ticket Types</h2>
+        
+        <div class="space-y-4">
+            @for (int i = 0; i < newEvent.TicketTypes.Count; i++)
+            {
+                // CORREÇÃO CS0021: Usando ElementAt() para indexar uma ICollection<T>
+                var ticket = newEvent.TicketTypes.ElementAt(i);
+                
+                var ticketNameId = string.Format("ticketName{0}", i);
+                var ticketPriceId = string.Format("ticketPrice{0}", i);
+                var ticketQuotaId = string.Format("ticketQuota{0}", i);
+
+                <div class="p-4 border rounded-lg bg-indigo-50 relative">
+                    <h3 class="font-bold text-gray-800 mb-3">Ticket #@(i + 1): @(string.IsNullOrEmpty(ticket.Name) ? "New Type" : ticket.Name)</h3>
+
+                    <!-- Remove Button -->
+                    <button type="button" @onclick="() => RemoveTicketType(ticket)" class="absolute top-4 right-4 text-red-500 hover:text-red-700 transition duration-150">
+                        <span class="oi oi-trash" aria-hidden="true"></span>
+                    </button>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                        <!-- Ticket Name -->
+                        <div>
+                            <label for="@ticketNameId" class="block text-xs font-medium text-gray-700">Name</label>
+                            <!-- REVISÃO RZ9986: Usa @ticketNameId diretamente -->
+                            <InputText id="@ticketNameId" @bind-Value="ticket.Name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                            <ValidationMessage For="@(() => ticket.Name)" class="text-sm text-red-600 mt-1" />
+                        </div>
+
+                        <!-- Price -->
+                        <div>
+                            <label for="@ticketPriceId" class="block text-xs font-medium text-gray-700">Price ($)</label>
+                            <!-- REVISÃO RZ9986: Usa @ticketPriceId diretamente -->
+                            <InputNumber id="@ticketPriceId" @bind-Value="ticket.Price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                            <ValidationMessage For="@(() => ticket.Price)" class="text-sm text-red-600 mt-1" />
+                        </div>
+
+                        <!-- Quota -->
+                        <div>
+                            <label for="@ticketQuotaId" class="block text-xs font-medium text-gray-700">Quota/Quantity</label>
+                            <!-- REVISÃO RZ9986: Usa @ticketQuotaId diretamente -->
+                            <InputNumber id="@ticketQuotaId" @bind-Value="ticket.Quota" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                            <ValidationMessage For="@(() => ticket.Quota)" class="text-sm text-red-600 mt-1" />
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <button type="button" @onclick="AddTicketType" class="flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-150">
+                <span class="oi oi-plus mr-2" aria-hidden="true"></span> Add Ticket Type
+            </button>
+        </div>
+
+        <!-- Error/Success Message -->
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <div class="mt-6 p-4 @(isSuccess ? "bg-green-100 border-green-400 text-green-700" : "bg-red-100 border-red-400 text-red-700") border rounded-lg" role="alert">
+                @statusMessage
+            </div>
+        }
+
+        <!-- ACTION BUTTONS -->
+        <div class="mt-8 pt-4 border-t flex justify-end space-x-4">
+            <button type="button" @onclick="() => NavManager.NavigateTo(eventRoute)" class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition duration-150">
+                Cancel
+            </button>
+            <button type="submit" disabled="@isCreating" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 disabled:opacity-50">
+                @if (isCreating)
+                {
+                    <span class="animate-pulse">Creating...</span>
+                }
+                else
+                {
+                    <span>Save Event</span>
+                }
+            </button>
+        </div>
+
+    </EditForm>
+</div>
+
+@code {
+    string eventRoute = "/events";
+    
+    [Inject]
+    public EventService EventService { get; set; } = default!;
+
+    [Inject]
+    public NavigationManager NavManager { get; set; } = default!;
+
+    private Event newEvent = new Event {
+        StartDate = DateTime.Now.Date.AddDays(7).AddHours(10), 
+        EndDate = DateTime.Now.Date.AddDays(7).AddHours(18),
+        TicketTypes = new List<TicketType> { new TicketType() }
+    };
+
+    private bool isCreating = false;
+    private string statusMessage = string.Empty;
+    private bool isSuccess = false;
+
+    // CORREÇÃO CS1662: Alterado de 'void' para 'Task'
+    private Task AddTicketType()
+    {
+        newEvent.TicketTypes.Add(new TicketType());
+        return Task.CompletedTask;
+    }
+
+    // CORREÇÃO CS1662: Alterado de 'void' para 'Task'
+    private Task RemoveTicketType(TicketType ticket)
+    {
+        if (newEvent.TicketTypes.Count > 1)
+        {
+            newEvent.TicketTypes.Remove(ticket);
+        }
+        else
+        {
+            statusMessage = "An event must have at least one ticket type.";
+            isSuccess = false;
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleCreateEvent()
+    {
+        isCreating = true;
+        statusMessage = string.Empty;
+        isSuccess = false;
+
+        // Validation for minimum ticket types
+        // NOTA: Para ICollection<T> o Any() funciona corretamente sem Linq.
+        if (!newEvent.TicketTypes.Any(t => !string.IsNullOrEmpty(t.Name)))
+        {
+            statusMessage = "You must add and fill in at least one ticket type.";
+            isCreating = false;
+            return;
+        }
+
+        try
+        {
+            var createdEvent = await EventService.CreateEventAsync(newEvent);
+
+            isSuccess = true;
+            statusMessage = $"Event '{createdEvent.Name}' created successfully!";
+            
+            await Task.Delay(2000); 
+            NavManager.NavigateTo(eventRoute);
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            statusMessage = $"Error creating event: {ex.Message}";
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+}

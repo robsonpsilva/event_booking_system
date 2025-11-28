@@ -1,0 +1,44 @@
+﻿<div class="top-row ps-3 navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">EventBookingSystem</a>
+        <button @onclick="ToggleNavMenu" title="Navigation menu" class="navbar-toggler">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass">
+    <nav class="flex-column">
+        <!-- Home -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <!-- Gerenciar Eventos (CORRIGIDO) -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="events">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Manage Events
+            </NavLink>
+        </div>
+
+        <!-- Criar Novo Evento (CORRIGIDO) -->
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="events/create">
+                <span class="oi oi-plus" aria-hidden="true"></span> Create New
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = false; // ✅ Menu aberto por padrão
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}
