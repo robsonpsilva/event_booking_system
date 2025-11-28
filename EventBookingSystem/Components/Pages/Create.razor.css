@@ -143,14 +143,15 @@
 }
 
 .btn-primary {
-    background-color: #3498db;
+    background-color: #056baf;
     color: white;
-    border: 1px solid #3498db;
+    border: 2px solid #111212;
     box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+    width: 100px;
 }
 
 .btn-primary:hover:not(:disabled) {
-    background-color: #2980b9;
+    background-color: #093f63;
     box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
 }
 
@@ -158,6 +159,7 @@
     background-color: #ecf0f1;
     color: #34495e;
     border: 1px solid #bdc3c7;
+    width: 100px;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -165,13 +167,14 @@
 }
 
 .btn-add-ticket {
-    background-color: #2ecc71;
+    border: 2px solid #111212;
+    background-color: #056baf;
     color: white;
-    border: 1px solid #27ae60;
+    border: 1px solid #000a05;
 }
 
 .btn-add-ticket:hover {
-    background-color: #27ae60;
+    background-color: #093f63;
 }
 
 .btn:disabled, .btn[disabled] {
