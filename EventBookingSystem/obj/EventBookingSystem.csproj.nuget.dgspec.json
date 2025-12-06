@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\cmrs\\OneDrive - PETROBRAS\\Documents\\GitHub\\CSE-310\\event_booking_system\\EventBookingSystem\\EventBookingSystem.csproj": {}
+    "/Users/robsonpaulodasilva/Documents/byu/cse325/event_booking_system/EventBookingSystem/EventBookingSystem.csproj": {}
   },
   "projects": {
-    "C:\\Users\\cmrs\\OneDrive - PETROBRAS\\Documents\\GitHub\\CSE-310\\event_booking_system\\EventBookingSystem\\EventBookingSystem.csproj": {
+    "/Users/robsonpaulodasilva/Documents/byu/cse325/event_booking_system/EventBookingSystem/EventBookingSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\cmrs\\OneDrive - PETROBRAS\\Documents\\GitHub\\CSE-310\\event_booking_system\\EventBookingSystem\\EventBookingSystem.csproj",
+        "projectUniqueName": "/Users/robsonpaulodasilva/Documents/byu/cse325/event_booking_system/EventBookingSystem/EventBookingSystem.csproj",
         "projectName": "EventBookingSystem",
-        "projectPath": "C:\\Users\\cmrs\\OneDrive - PETROBRAS\\Documents\\GitHub\\CSE-310\\event_booking_system\\EventBookingSystem\\EventBookingSystem.csproj",
-        "packagesPath": "C:\\Users\\cmrs\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\cmrs\\OneDrive - PETROBRAS\\Documents\\GitHub\\CSE-310\\event_booking_system\\EventBookingSystem\\obj\\",
+        "projectPath": "/Users/robsonpaulodasilva/Documents/byu/cse325/event_booking_system/EventBookingSystem/EventBookingSystem.csproj",
+        "packagesPath": "/Users/robsonpaulodasilva/.nuget/packages/",
+        "outputPath": "/Users/robsonpaulodasilva/Documents/byu/cse325/event_booking_system/EventBookingSystem/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\cmrs\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/robsonpaulodasilva/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -80,7 +80,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
